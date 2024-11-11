@@ -17,7 +17,11 @@ bot.start((ctx) => {
 
     ctx.reply(
         'Welcome to AI-detection bot. Our bot will help you to see if your text will be detected by Turnitin. ' +
-        "Since you are a new user, you will be given 3 free trials to test our service. Good luck!",
+        "Since you are a new member, you will be given 3 free trials to test our service. To start using the bot, " +
+        "simply send your word, pdf or txt file and we'll take care of the rest. Below, is a list of useful " +
+        "commands:\n\n- /subscribe - use this command to buy subscription\n\n- /subscriptiondetails - use this " +
+        "command to get information about your subscription\n\n- /freetrial - use this command to get information " +
+        "about your free trial",
         Markup.inlineKeyboard([
             Markup.button.callback("View Pricing", "pricing")
         ])
@@ -25,27 +29,27 @@ bot.start((ctx) => {
 
 });
 
-bot.command("detectai", (ctx) => {
-    ctx.reply("Submit your word file");
+bot.command("subscribe", (ctx) => {
+
+    ctx.replyWithInvoice({
+        title: "AI & Plagiarism detection",
+        description: 
+        "AI & Plagiarism Detection: 1-month subscription with 99% accuracy, " +
+        "capable of detecting AI models (e.g., ChatGPT, Gemini, Claude) and " +
+        "plagiarism.",
+        currency: "UZS",
+        prices: JSON.stringify([{ label: "Price", amount: 3000000 }]),
+        provider_token: "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065",
+        payload: "ai-and-plagiarism-detection"
+    });
+
 });
 
-bot.command("creditsleft", (ctx) => {
-    ctx.reply("You have 88 credits left");
-})
+bot.on("successful_payment", async (ctx) => {
 
-bot.action('pricing', (ctx) => {
-
-    ctx.answerCbQuery();
-    ctx.reply(
-        'AI Detector - $12.99 per month. This includes the following:\n\n' +
-        '- 100 credits (~ 25,000 words)\n' +
-        '- 99% accuracy\n' +
-        '- Detection of AI models such as ChatGPT, Gemini and Claude\n' +
-        '- Can be used by two accounts',
-        Markup.inlineKeyboard([
-            Markup.button.url("Contact Admin", "https://t.me/one_problem_solution_2")
-        ])
-    );
+    const payment = ctx.message.successful_payment;
+    
+    console.log(payment);
 
 });
 
