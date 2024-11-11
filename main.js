@@ -15,21 +15,20 @@ bot.use(session({ db, collectionName: 'sessions' }));
 
 bot.start((ctx) => {
 
-    ctx.reply(
-        'Welcome to AI-detection bot. Our bot will help you to see if your text will be detected by Turnitin. ' +
-        "Since you are a new member, you will be given 3 free trials to test our service. To start using the bot, " +
-        "simply send your word, pdf or txt file and we'll take care of the rest. Below, is a list of useful " +
-        "commands:\n\n- /subscribe - use this command to buy subscription\n\n- /subscriptiondetails - use this " +
-        "command to get information about your subscription\n\n- /freetrial - use this command to get information " +
-        "about your free trial",
-        Markup.inlineKeyboard([
-            Markup.button.callback("View Pricing", "pricing")
+    ctx.replyWithHTML(
+        'Welcome to <b>AI-detection bot</b>!\n\nOur bot will help you to test if your work will be detected by Turnitin. ' +
+        "Since you are a new member, you have <b>3 free trials</b>.\n\nTo start using the bot, " +
+        "simply send your <b>word</b>, <b>pdf</b> or <b>txt</b> file and we'll take care of the rest.",
+        Markup.keyboard([
+            ["Buy subscription"],
+            ["My subscription", "My free trials"]
         ])
+        .resize()
     );
 
 });
 
-bot.command("subscribe", (ctx) => {
+bot.hears("Buy subscription", (ctx) => {
 
     ctx.replyWithInvoice({
         title: "AI & Plagiarism detection",
@@ -42,6 +41,18 @@ bot.command("subscribe", (ctx) => {
         provider_token: "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065",
         payload: "ai-and-plagiarism-detection"
     });
+
+});
+
+bot.hears("My subscription", (ctx) => {
+
+    ctx.reply("You clicked on the 'My subscription' button");
+
+});
+
+bot.hears("My free trials", (ctx) => {
+
+    ctx.reply("You clicked on the 'My free trials' button");
 
 });
 
