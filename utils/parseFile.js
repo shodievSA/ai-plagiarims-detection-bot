@@ -1,5 +1,6 @@
 const mammoth = require("mammoth");
-const path = require("path")
+const fs = require("fs");
+const path = require("path");
 
 async function parseFile({ fileName, fileType }) {
 
@@ -29,7 +30,13 @@ async function parseFile({ fileName, fileType }) {
 
     } else if (fileType == "text/plain") {
 
-        // txt file parsing
+        const filePath = path.join(
+            __dirname, "..", "text_files", fileName
+        );
+
+        const value = fs.readFileSync(filePath, 'utf-8');
+
+        return value;
 
     }
 

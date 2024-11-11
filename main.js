@@ -66,7 +66,12 @@ bot.on("document", async (ctx) => {
             const fileID = file.file_id;
             const fileURL = await ctx.telegram.getFileLink(fileID);
     
-            await downloadWordFile(fileURL, file);
+            await downloadWordFile({
+                fileURL: fileURL, 
+                file: file,
+                fileType: fileType
+            });
+            
             const fileContents = await parseFile({
                 fileName: file.file_name,
                 fileType: fileType
