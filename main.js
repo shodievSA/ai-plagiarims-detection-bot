@@ -2,7 +2,7 @@ require("dotenv").config();
 const { Telegraf, Markup, session } = require("telegraf");
 const { MongoClient } = require("mongodb");
 const downloadWordFile = require("./utils/downloadWordFile.js");
-const parseWordFile = require("./utils/parseWordFile.js");
+const parseFile = require("./utils/parseFile.js");
 
 const client = new MongoClient(
     process.env.MONGODB_URI
@@ -22,6 +22,7 @@ bot.start((ctx) => {
             Markup.button.callback("View Pricing", "pricing")
         ])
     );
+
 });
 
 bot.command("detectai", (ctx) => {
@@ -33,6 +34,7 @@ bot.command("creditsleft", (ctx) => {
 })
 
 bot.action('pricing', (ctx) => {
+
     ctx.answerCbQuery();
     ctx.reply(
         'AI Detector - $12.99 per month. This includes the following:\n\n' +
@@ -44,28 +46,46 @@ bot.action('pricing', (ctx) => {
             Markup.button.url("Contact Admin", "https://t.me/one_problem_solution_2")
         ])
     );
+
 });
 
 bot.on("document", async (ctx) => {
 
     const file = ctx.message.document;
+    const fileType = file.mime_type;
 
-    try {
+    if (
+        fileType == "application/pdf"
+        ||
+        fileType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ||
+        fileType == "text/plain"
+    ) {
+        try {
 
-        const fileID = file.file_id;
-        const fileURL = await ctx.telegram.getFileLink(fileID);
-
-        await downloadWordFile(fileURL, file);
-        const fileContents = await parseWordFile(file.file_name);
-
-        console.log(fileContents);
-
-        ctx.reply("Your file has been parsed successfully!");
-
-    } catch (error) {
-
-        console.log(error);
-
+            const fileID = file.file_id;
+            const fileURL = await ctx.telegram.getFileLink(fileID);
+    
+            await downloadWordFile(fileURL, file);
+            const fileContents = await parseFile({
+                fileName: file.file_name,
+                fileType: fileType
+            });
+    
+            console.log(fileContents);
+    
+            ctx.reply("Your file has been parsed successfully!");
+    
+        } catch (error) {
+    
+            console.log(error);
+    
+        }
+    } else {
+        ctx.reply(
+            "Sorry, our bot doesn't support the file you have submitted. Currently, " +
+            "only the following files are supported: pdf, txt and docx."
+        );
     }
 
 });
