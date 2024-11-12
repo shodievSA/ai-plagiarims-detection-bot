@@ -20,8 +20,9 @@ bot.start((ctx) => {
         "Since you are a new member, you have <b>3 free trials</b>.\n\nTo start using the bot, " +
         "simply send your <b>word</b>, <b>pdf</b> or <b>txt</b> file and we'll take care of the rest.",
         Markup.keyboard([
-            ["Buy subscription"],
-            ["My subscription", "My free trials"]
+            ["Check my work"],
+            ["My subscription", "My free trials"],
+            ["Buy subscription"]
         ])
         .resize()
     );
@@ -41,6 +42,12 @@ bot.hears("Buy subscription", (ctx) => {
         provider_token: "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065",
         payload: "ai-and-plagiarism-detection"
     });
+
+});
+
+bot.hears("Check my work", (ctx) => {
+
+    ctx.reply("Send your pdf, word or txt file.");
 
 });
 
@@ -76,31 +83,87 @@ bot.on("document", async (ctx) => {
         ||
         fileType == "text/plain"
     ) {
+        let isCheckfinished = false;
+
+        let message = "Checking your work.";
+        const replyMessage = await ctx.reply(
+            message, 
+            { reply_to_message_id: ctx.message.message_id }
+        );
+        const messageID = replyMessage.message_id;
+
         try {
 
-            const fileID = file.file_id;
-            const fileURL = await ctx.telegram.getFileLink(fileID);
-    
-            await downloadWordFile({
-                fileURL: fileURL, 
-                file: file,
-                fileType: fileType
-            });
+            async function processFile() {
+
+                setTimeout(async () => {
+
+                    const fileID = file.file_id;
+                    const fileURL = await ctx.telegram.getFileLink(fileID);
             
-            const fileContents = await parseFile({
-                fileName: file.file_name,
-                fileType: fileType
-            });
-    
-            console.log(fileContents);
-    
-            ctx.reply("Your file has been parsed successfully!");
+                    await downloadWordFile({
+                        fileURL: fileURL, 
+                        file: file,
+                        fileType: fileType
+                    });
+                    
+                    const fileContents = await parseFile({
+                        fileName: file.file_name,
+                        fileType: fileType
+                    });
+
+                    isCheckfinished = true;
+            
+                    ctx.reply("Your file has been parsed successfully!");
+                    
+                }, 10000);
+
+            };
+            processFile();
+
+            const intervalID = setInterval(() => {
+
+                if (isCheckfinished) 
+                {
+                    ctx.telegram.deleteMessage(
+                        ctx.chat.id, 
+                        messageID
+                    );
+
+                    clearInterval(intervalID); 
+                } 
+                else 
+                {
+                    if (message === "Checking your work.") 
+                    {
+                        message = "Checking your work..";
+                    } 
+                    else if (message === "Checking your work..") 
+                    {
+                        message = "Checking your work...";
+                    } 
+                    else if (message === "Checking your work...") 
+                    {
+                        message = "Checking your work.";
+                    }
+
+                    ctx.telegram.editMessageText(
+                        ctx.chat.id, 
+                        messageID, 
+                        undefined, 
+                        message
+                    )
+                    .catch((error) => {
+                        console.log(`Failed to edit message: ${error.message}`);
+                    });
+                }
+                
+            }, 400); 
     
         } catch (error) {
-    
             console.log(error);
-    
         }
+
     } else {
         ctx.reply(
             "Sorry, our bot doesn't support the file you have submitted. Currently, " +
