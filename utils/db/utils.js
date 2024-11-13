@@ -1,19 +1,30 @@
-const {User} = require('../db/models/user');
+const {User} = require('../../db/models/user');
 const {ValidationError} = require('sequelize');
+const {UserDoesNotExist} = require("./exceptions");
 
 async function getUser(telegramId) {
     const user = await User.findOne({
         where: {telegramId}
     });
     if (!user) {
-        throw new Error("The user does not exist.")
+        throw new UserDoesNotExist("User does not exist.")
     }
     return user;
 }
 
 async function checkUserExistence(telegramId) {
-    const user = await getUser(telegramId)
-    return user !== null;
+    try {
+        const user = await getUser(telegramId)
+        return user !== null;
+    }catch (err) {
+        if (err instanceof UserDoesNotExist) {
+            return false;
+        }
+        else {
+            return false;
+        }
+    }
+
 }
 
 
