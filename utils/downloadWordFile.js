@@ -7,11 +7,11 @@ async function downloadWordFile({ fileURL, file, fileType }) {
     let directory;
 
     if (fileType == "application/pdf") {
-        directory = "pdf_files"
+        directory = "media/pdf_files"
     } else if (fileType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-        directory = "word_files"
+        directory = "media/word_files"
     } else if (fileType == "text/plain") {
-        directory = "text_files"
+        directory = "media/text_files"
     }
 
     const res = await fetch(fileURL.href);
