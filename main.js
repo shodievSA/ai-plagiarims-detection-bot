@@ -7,7 +7,7 @@ const {
     activateSubscriptionForSingleUser,
     isFreeTrialActive,
     decreaseFreeTrialCounterForSingleUser
-} = require("./utils/dbUtils");
+} = require("./utils/db/utils");
 const {ValidationError} = require("sequelize");
 
 
