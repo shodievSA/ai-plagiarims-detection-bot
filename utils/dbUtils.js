@@ -5,9 +5,9 @@ async function getUser(telegramId) {
     const user = await User.findOne({
         where: {telegramId}
     });
-    if (!user) {
-        throw new Error("The user does not exist.")
-    }
+    // if (!user) {
+    //     throw new Error("The user does not exist.")
+    // }
     return user;
 }
 
@@ -109,10 +109,40 @@ async function decreaseFreeTrialCounterForSingleUser(telegramId) {
     }
 }
 
+async function getNumberOfFreeTrialsLeft(telegramId) {
+    try {
+        const user = await getUser(telegramId);
+        const originalFreeTrialCounter = user.freeTrialCounter;
+
+        return originalFreeTrialCounter;
+    } catch (err) {
+        console.error(
+            "Something went wrong while getting number of free trials left for a user: ",
+            err
+        );
+    }
+}
+
+async function checkUserSubscription(telegramId) {
+    try {
+        const user = await getUser(telegramId);
+        const isSubscriptionActive = user.isSubscriptionActive;
+
+        return isSubscriptionActive;
+    } catch (err) {
+        console.error(
+            "Something went wrong while checking if user subscription is active: ",
+            err
+        );
+    }
+}
+
 module.exports = {
     createUser,
     activateSubscriptionForSingleUser,
     deactivateSubscriptionForSingleUser,
     isFreeTrialActive,
-    decreaseFreeTrialCounterForSingleUser
+    decreaseFreeTrialCounterForSingleUser,
+    getNumberOfFreeTrialsLeft,
+    checkUserSubscription
 };

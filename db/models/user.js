@@ -42,7 +42,6 @@ const User = sequelize.define("User", {
     }
 )
 
-
 async function initUser() {
     try {
         await sequelize.sync();

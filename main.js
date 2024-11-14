@@ -6,7 +6,9 @@ const {
     createUser,
     activateSubscriptionForSingleUser,
     isFreeTrialActive,
-    decreaseFreeTrialCounterForSingleUser
+    decreaseFreeTrialCounterForSingleUser,
+    getNumberOfFreeTrialsLeft,
+    checkUserSubscription
 } = require("./utils/dbUtils");
 const {ValidationError} = require("sequelize");
 
@@ -70,15 +72,31 @@ bot.hears("Check my work", (ctx) => {
 
 });
 
-bot.hears("My subscription", (ctx) => {
+bot.hears("My subscription", async (ctx) => {
 
-    ctx.reply("You clicked on the 'My subscription' button");
+    const isUserSubscriptionActive = await checkUserSubscription(ctx.from.id);
+
+    if (isUserSubscriptionActive) {
+
+    } else {
+        ctx.reply("You don't have any active subscriptions at the moment.");
+    }
 
 });
 
-bot.hears("My free trials", (ctx) => {
+bot.hears("My free trials", async (ctx) => {
 
-    ctx.reply("You clicked on the 'My free trials' button");
+    const freeTrialsLeft = await getNumberOfFreeTrialsLeft(ctx.from.id);
+
+    if (freeTrialsLeft > 0) {
+        ctx.reply(`You have ${freeTrialsLeft} free trials left.`);
+    } else {
+        ctx.replyWithHTML(
+            "You don't have any free trials left.\n\nYou can buy a " +
+            "monthly-based subscription by using the \"<b>Buy subscription</b>\" " +
+            "button."
+        );
+    }
 
 });
 
