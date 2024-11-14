@@ -1,19 +1,30 @@
-const {User} = require('../db/models/user');
+const {User} = require('../../db/models/user');
 const {ValidationError} = require('sequelize');
+const {UserDoesNotExist} = require("./exceptions");
 
 async function getUser(telegramId) {
     const user = await User.findOne({
         where: {telegramId}
     });
-    // if (!user) {
-    //     throw new Error("The user does not exist.")
-    // }
+    if (!user) {
+        throw new UserDoesNotExist("User does not exist.")
+    }
     return user;
 }
 
 async function checkUserExistence(telegramId) {
-    const user = await getUser(telegramId)
-    return user !== null;
+    try {
+        const user = await getUser(telegramId)
+        return user !== null;
+    }catch (err) {
+        if (err instanceof UserDoesNotExist) {
+            return false;
+        }
+        else {
+            return false;
+        }
+    }
+
 }
 
 
@@ -109,40 +120,10 @@ async function decreaseFreeTrialCounterForSingleUser(telegramId) {
     }
 }
 
-async function getNumberOfFreeTrialsLeft(telegramId) {
-    try {
-        const user = await getUser(telegramId);
-        const originalFreeTrialCounter = user.freeTrialCounter;
-
-        return originalFreeTrialCounter;
-    } catch (err) {
-        console.error(
-            "Something went wrong while getting number of free trials left for a user: ",
-            err
-        );
-    }
-}
-
-async function checkUserSubscription(telegramId) {
-    try {
-        const user = await getUser(telegramId);
-        const isSubscriptionActive = user.isSubscriptionActive;
-
-        return isSubscriptionActive;
-    } catch (err) {
-        console.error(
-            "Something went wrong while checking if user subscription is active: ",
-            err
-        );
-    }
-}
-
 module.exports = {
     createUser,
     activateSubscriptionForSingleUser,
     deactivateSubscriptionForSingleUser,
     isFreeTrialActive,
-    decreaseFreeTrialCounterForSingleUser,
-    getNumberOfFreeTrialsLeft,
-    checkUserSubscription
+    decreaseFreeTrialCounterForSingleUser
 };

@@ -9,7 +9,7 @@ const {
     decreaseFreeTrialCounterForSingleUser,
     getNumberOfFreeTrialsLeft,
     checkUserSubscription
-} = require("./utils/dbUtils");
+} = require("./utils/db/utils");
 const {ValidationError} = require("sequelize");
 
 
