@@ -8,11 +8,13 @@ const displayUserFreeTrialInfo = require("./commands/displayUserFreeTrialInfo.js
 const buySubscription = require("./commands/buySubscription.js");
 const handleFileUpload = require("./commands/handleFileUpload.js");
 const confirmUserPayment = require("./commands/confirmUserPayment.js");
+const subscriptionMiddleware = require("./middlewares/subscriptionMiddleware");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 bot.use(loggerMiddleware);
 bot.use(authMiddleware);
+bot.use(subscriptionMiddleware)
 
 bot.start(startBot);
 
