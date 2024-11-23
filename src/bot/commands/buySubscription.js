@@ -1,16 +1,24 @@
+const { Markup } = require("telegraf");
+
 async function buySubscription(ctx) {
 
-    ctx.replyWithInvoice({
-        title: "AI & Plagiarism detection",
-        description:
-            "AI & Plagiarism Detection: 1-month subscription with 99% accuracy, " +
-            "capable of detecting AI models (e.g., ChatGPT, Gemini, Claude) and " +
-            "plagiarism.",
-        currency: "UZS",
-        prices: JSON.stringify([{ label: "Price", amount: 3000000 }]),
-        provider_token: "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065",
-        payload: "ai-and-plagiarism-detection"
-    });
+    ctx.replyWithHTML(
+        "<b>AI & Plagiarism detection:</b>\n\n" +
+        "- 1-month subscription\n\n" +
+        "- 99% accuracy\n\n" +
+        "- detection of plagiarism\n\n" + 
+        "- detection of AI models such as ChatGPT, Gemini, Claude\n\n" +
+        "- supported files: .pdf, .docx, .doc and .txt.\n\n" +
+        "Price: <b>20,000 UZS</b>",
+        Markup.inlineKeyboard(
+            [
+                Markup.button.url(
+                "Contact Admin", 
+                "https://t.me/one_problem_solution_2"
+                )
+            ]
+        )
+    );
 
 };
 

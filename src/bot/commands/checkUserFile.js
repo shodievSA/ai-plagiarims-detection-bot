@@ -1,6 +1,6 @@
 async function checkUserFile(ctx) {
 
-    ctx.reply("Send your pdf, word or txt file:");
+    ctx.reply("Send your .pdf, .docx, .doc or txt file:");
 
 };
 

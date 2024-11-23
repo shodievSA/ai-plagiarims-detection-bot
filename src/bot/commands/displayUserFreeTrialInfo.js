@@ -9,7 +9,7 @@ async function displayUserFreeTrialInfo(ctx) {
     } else {
         ctx.replyWithHTML(
             "You don't have any free trials left.\n\nYou can buy a " +
-            "monthly-based subscription by using the \"<b>Buy subscription</b>\" " +
+            "1-month subscription (20,000 UZS) by clicking \"<b>Buy subscription</b>\" " +
             "button."
         );
     }

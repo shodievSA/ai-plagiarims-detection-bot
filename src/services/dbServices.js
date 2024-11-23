@@ -1,6 +1,5 @@
 const {ValidationError} = require('sequelize');
 const {User} = require("../db/index");
-const {sequelize} = require("../../db/config");
 
 class UserDoesNotExist extends Error {
     constructor(message = 'User does not exist.') {
@@ -34,7 +33,6 @@ async function checkUserExistence(telegramId) {
 
 }
 
-
 async function createUser(data) {
     const userExists = await checkUserExistence(data.telegramId)
     if (userExists) {
@@ -58,7 +56,6 @@ async function createUser(data) {
         }
     }
 }
-
 
 async function updateUserSubscriptionStatus(telegramId, startedAt, finishedAt, isActive) {
     try {
@@ -105,8 +102,7 @@ async function deactivateSubscriptionForSingleUser(telegramId) {
     }
 }
 
-
-async function isFreeTrialActive(telegramId) {
+async function checkUserFreeTrial(telegramId) {
     try {
         const user = await getUser(telegramId);
         return user.freeTrialCounter !== 0;
@@ -155,12 +151,36 @@ async function checkUserSubscription(telegramId) {
     }
 }
 
+async function getUserSubscriptionDetails(telegramId) {
+
+    try {
+
+        const user = await getUser(telegramId);
+        const subscriptionInfo = {
+            "purchasedOn": user["subscriptionStartedAt"],
+            "expiresOn": user["subscriptionFinishedAt"]
+        }
+
+        return subscriptionInfo;
+
+    } catch (err) {
+
+        console.error(
+            "Something went wrong while obtaining user's subscription details: ",
+            err
+        );
+
+    }
+
+}
+
 module.exports = {
     createUser,
     activateSubscriptionForSingleUser,
     deactivateSubscriptionForSingleUser,
-    isFreeTrialActive,
+    checkUserFreeTrial,
     decreaseFreeTrialCounterForSingleUser,
     getNumberOfFreeTrialsLeft,
-    checkUserSubscription
+    checkUserSubscription,
+    getUserSubscriptionDetails
 };

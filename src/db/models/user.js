@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
         }, subscriptionFinishedAt: {
             type: DataTypes.DATE, allowNull: true, defaultValue: null,
         }, freeTrialCounter: {
-            type: DataTypes.INTEGER, allowNull: false, defaultValue: 3,
+            type: DataTypes.INTEGER, allowNull: false, defaultValue: 2,
         }
 
     });

@@ -1,6 +1,6 @@
 const { Markup } = require("telegraf");
 const { createUser } = require("../../services/dbServices.js");
-const {ValidationError} = require("sequelize");
+const { ValidationError } = require("sequelize");
 
 async function startBot(ctx) {
 
@@ -16,13 +16,14 @@ async function startBot(ctx) {
         await createUser(data);
 
         ctx.replyWithHTML(
-            'Welcome to <b>AI-detection bot</b>!\n\nOur bot will help you to test if your work will be detected by Turnitin. ' +
-            "Since you are a new member, you have <b>3 free trials</b>.\n\nTo start using the bot, " +
-            "simply send your <b>word</b>, <b>pdf</b> or <b>txt</b> file and we'll take care of the rest.",
+            'Welcome to <b>AI & Plagiarism</b> detection bot!\n\nOur bot will help you to see if your work will be detected by Turnitin. ' +
+            "Since you are a new member, you have <b>2 free trials</b>.\n\nTo check your work, " +
+            "click \"<b>Check my work</b>\" button and then send your file. At the moment, the following files are supported: " +
+            "<b>.pdf</b>, <b>.txt</b>, <b>.docx</b> and <b>.doc</b>.",
             Markup.keyboard([
-                ["Check my work"],
-                ["My subscription", "My free trials"],
-                ["Buy subscription"]
+                ["📃 Check my work"],
+                ["🗓 My subscription", "🆓 My free trials"],
+                ["💳 Buy subscription"]
             ])
             .resize()
         );
