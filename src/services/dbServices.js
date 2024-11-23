@@ -1,6 +1,6 @@
 const {ValidationError} = require('sequelize');
 const {User} = require("../db/index");
-const {sequelize} = require("../../db/config");
+
 
 class UserDoesNotExist extends Error {
     constructor(message = 'User does not exist.') {
@@ -156,11 +156,13 @@ async function checkUserSubscription(telegramId) {
 }
 
 module.exports = {
+    getUser,
     createUser,
     activateSubscriptionForSingleUser,
     deactivateSubscriptionForSingleUser,
     isFreeTrialActive,
     decreaseFreeTrialCounterForSingleUser,
     getNumberOfFreeTrialsLeft,
-    checkUserSubscription
+    checkUserSubscription,
+    UserDoesNotExist
 };
