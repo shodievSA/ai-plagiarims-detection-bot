@@ -1,7 +1,6 @@
+const copyleaks = require("../../services/copyleaks.js");
 const { checkUserFreeTrial, checkUserSubscription } = require("../../services/dbServices.js");
-const { Copyleaks, CopyleaksURLSubmissionModel } = require('plagiarism-checker');
-
-const copyleaks = new Copyleaks();
+const { CopyleaksURLSubmissionModel } = require('plagiarism-checker');
 
 async function handleFileUpload(ctx) {
 
@@ -52,17 +51,15 @@ async function handleFileUpload(ctx) {
                                 },
                                 developerPayload: JSON.stringify({
                                     chat_id: ctx.chat.id,
-                                    telegram_id: telegramId
+                                    telegram_id: telegramId,
+                                    token: loginResult
                                 }),
                                 aiGeneratedText: {
                                     detect: true,
                                 },
                                 sensitivityLevel: 5,
                                 pdf: {
-                                    create: true
-                                },
-                                writingFeedback: {
-                                    enable: true
+                                    create: true,
                                 }
                             }
                         );

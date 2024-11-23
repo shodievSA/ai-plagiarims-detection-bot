@@ -1,3 +1,4 @@
+require("dotenv").config({ path: require("path").resolve(__dirname, "../../.env") });
 const {Telegraf} = require("telegraf");
 const express = require("express")
 const authMiddleware = require("./middlewares/authMiddleware");
@@ -11,6 +12,11 @@ const handleFileUpload = require("./commands/handleFileUpload.js");
 const confirmUserPayment = require("./commands/confirmUserPayment.js");
 const { decreaseFreeTrialCounterForSingleUser } = require("../services/dbServices.js");
 const subscriptionMiddleware = require("./middlewares/subscriptionMiddleware");
+const copyleaks = require("../services/copyleaks.js");
+const { CopyleaksExportModel } = require("plagiarism-checker");
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(loggerMiddleware);
@@ -31,6 +37,17 @@ bot.hears("💳 Buy subscription", buySubscription);
 bot.on("document", handleFileUpload);
 bot.on("successful_payment", confirmUserPayment);
 
+const storage  = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "./reports");
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    }
+});
+
+const upload = multer({ storage });
+
 app.post('/webhook/copyleaks/status', (req, res) => {
 
     console.log('Copyleaks status update:', req.body);
@@ -40,27 +57,71 @@ app.post('/webhook/copyleaks/status', (req, res) => {
 
 app.post('/webhook/copyleaks/completed', async (req, res) => {
 
-    const { results, developerPayload } = req.body;
-    const { chat_id, telegram_id } = JSON.parse(developerPayload);
-    
-    try {
+    const { scannedDocument, developerPayload } = req.body;
+    const { chat_id, telegram_id, token } = JSON.parse(developerPayload);
 
-        const reportUrl = results && results.internet[0].url;
-        await decreaseFreeTrialCounterForSingleUser(telegram_id);
+    const scanID = scannedDocument["scanId"];
+    const resultID = results["internet"][0]["id"]; // not there
 
-        bot.telegram.sendMessage(chat_id, reportUrl);
+    const exportModel = new CopyleaksExportModel(
+        `${process.env.WEBHOOK_URL}/export/scanId/${scanID}/completion`,
+        [
+            {
+                id: resultID,
+                endpoint: `${process.env.WEBHOOK_URL}/export/${scanID}/result/${resultID}`,
+                verb: "POST",
+            },
+        ],
+        {
+            endpoint: `${process.env.WEBHOOK_URL}/export/${scanID}/crawled-version`,
+            verb: "POST",
+        },
+        undefined,
+        JSON.stringify({
+            chat_id,
+            telegram_id
+        }),
+        {
+            endpoint: `${process.env.WEBHOOK_URL}/export/pdf-report`,
+            verb: "POST"
+        }
+    );
 
-    } catch (error) {
+    copyleaks.exportAsync(
+        token, scanID, scanID, exportModel
+    )
+    .then((res) => {
 
-        bot.telegram.sendMessage(
-            chat_id, 
-            "An error occured while processing your document. " +
-            "Please try again later."
+        console.log(res);
+
+    })
+    .catch((err) => {
+
+        console.log(
+            "The following error occured while sending export model: " + err
         );
 
-    }
+    });
 
     res.sendStatus(200);
+
+});
+
+app.post('/webhook/export/pdf-report', async (req, res) => {
+
+    console.log(
+        "Pdf report endpoint:",
+        req.file
+    )
+
+    res.sendStatus(200);
+
+});
+
+app.post('/webhook/copyleaks/export-completed', async (req, res) => {
+
+    console.log("Export has completed");
+    console.log(req.body);
 
 });
 
