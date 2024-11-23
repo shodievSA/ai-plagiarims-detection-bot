@@ -175,6 +175,7 @@ async function getUserSubscriptionDetails(telegramId) {
 }
 
 module.exports = {
+    getUser,
     createUser,
     activateSubscriptionForSingleUser,
     deactivateSubscriptionForSingleUser,
@@ -182,5 +183,6 @@ module.exports = {
     decreaseFreeTrialCounterForSingleUser,
     getNumberOfFreeTrialsLeft,
     checkUserSubscription,
-    getUserSubscriptionDetails
+    getUserSubscriptionDetails,
+    UserDoesNotExist
 };

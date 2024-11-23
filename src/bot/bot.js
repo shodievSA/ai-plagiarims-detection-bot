@@ -10,10 +10,12 @@ const buySubscription = require("./commands/buySubscription.js");
 const handleFileUpload = require("./commands/handleFileUpload.js");
 const confirmUserPayment = require("./commands/confirmUserPayment.js");
 const { decreaseFreeTrialCounterForSingleUser } = require("../services/dbServices.js");
+const subscriptionMiddleware = require("./middlewares/subscriptionMiddleware");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(loggerMiddleware);
 bot.use(authMiddleware);
+bot.use(subscriptionMiddleware)
 
 const app = express();
 app.use(express.json());
