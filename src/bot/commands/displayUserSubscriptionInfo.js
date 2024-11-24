@@ -2,6 +2,7 @@ const {
     checkUserSubscription,
     getUserSubscriptionDetails
 } = require("../../services/dbServices.js");
+const formatDate = require("../../utils/formatDate.js");
 
 async function displayUserSubscriptionInfo(ctx) {
 
@@ -12,14 +13,23 @@ async function displayUserSubscriptionInfo(ctx) {
 
     if (isUserSubscriptionActive) {
 
-        const { purchasedOn, expiresOn } = await getUserSubscriptionDetails(
+        let { purchaseDate, expirationDate } = await getUserSubscriptionDetails(
             userTelegramID
         );
 
-        ctx.reply(
+        purchaseDate = formatDate(
+            purchaseDate, 
+            "EEEE MMMM do yyyy"
+        );
+        expirationDate = formatDate(
+            expirationDate, 
+            "EEEE MMMM do yyyy"
+        );
+
+        ctx.replyWithHTML(
             "Your subscription details:\n\n" +
-            "<b>Purchased on: </b>" + purchasedOn + "\n" +
-            "<b>Expires on: </b>" + expiresOn
+            "<b>Purchased on: </b>" + purchaseDate + "\n\n" +
+            "<b>Expires on: </b>" + expirationDate
         );
 
     } else {

@@ -157,8 +157,8 @@ async function getUserSubscriptionDetails(telegramId) {
 
         const user = await getUser(telegramId);
         const subscriptionInfo = {
-            "purchasedOn": user["subscriptionStartedAt"],
-            "expiresOn": user["subscriptionFinishedAt"]
+            "purchaseDate": user["subscriptionStartedAt"],
+            "expirationDate": user["subscriptionFinishedAt"]
         }
 
         return subscriptionInfo;
