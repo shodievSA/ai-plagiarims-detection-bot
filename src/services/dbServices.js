@@ -19,6 +19,21 @@ async function getUser(telegramId) {
     return user;
 }
 
+async function getUserById(id) {
+    const user = await User.findOne({
+        where: {id}
+    });
+    if (!user) {
+        throw new UserDoesNotExist("User does not exist.")
+    }
+    return user;
+}
+
+async function getUsers() {
+    const users = await User.findAll({});
+    return users;
+}
+
 async function checkUserExistence(telegramId) {
     try {
         const user = await getUser(telegramId)
@@ -184,5 +199,7 @@ module.exports = {
     getNumberOfFreeTrialsLeft,
     checkUserSubscription,
     getUserSubscriptionDetails,
-    UserDoesNotExist
+    UserDoesNotExist,
+    getUsers,
+    getUserById
 };
