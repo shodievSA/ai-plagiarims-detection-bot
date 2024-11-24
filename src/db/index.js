@@ -2,14 +2,20 @@ require("dotenv").config({path: require("path").resolve(__dirname, "../.env")});
 const {Sequelize, DataTypes} = require("sequelize");
 const {dbUrl} = require("../config/config");
 const userModel = require("./models/user");
+const workModel = require("./models/work");
 
 const sequelize = new Sequelize(dbUrl);
 
 const User = userModel(sequelize, DataTypes);
+const Work = workModel(sequelize, DataTypes);
 
 const models = {
     User,
+    Work,
 };
+
+User.hasMany(Work, {foreignKey: "userId", as: "works"});
+Work.belongsTo(User, {foreignKey: "userId", as: "user"});
 
 sequelize.sync({force: false})
     .then(() => {

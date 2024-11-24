@@ -1,5 +1,5 @@
 const {ValidationError} = require('sequelize');
-const {User} = require("../db/index");
+const {User, Work} = require("../db/index");
 
 class UserDoesNotExist extends Error {
     constructor(message = 'User does not exist.') {
@@ -174,6 +174,47 @@ async function getUserSubscriptionDetails(telegramId) {
 
 }
 
+
+async function createWork(telegramId, documentData) {
+    try {
+        if (!telegramId || !documentData) {
+            throw new Error("Invalid input: 'telegramId' and 'documentData' are required.");
+        }
+
+        const refactoredDocumentData = {
+            fileLink: documentData.file_link,
+            fileUniqueName: documentData.file_unique_name,
+            fileName: documentData.file_name || "unknown",
+            fileType: documentData.mime_type || "unknown",
+            fileId: documentData.file_id,
+            fileUniqueId: documentData.file_unique_id,
+            fileSize: documentData.file_size || 0
+        };
+
+        if (!refactoredDocumentData.fileId || !refactoredDocumentData.fileUniqueId) {
+            throw new Error("Invalid document data: Missing essential fields (fileId, fileUniqueId).");
+        }
+
+        const user = await getUser(telegramId);
+        if (!user) {
+            throw new Error(`User with telegramId '${telegramId}' does not exist.`);
+        }
+
+        const userId = user.id;
+        const work = await Work.create({userId, ...refactoredDocumentData});
+
+        return {success: true, work};
+    } catch (error) {
+        if (error instanceof UserDoesNotExist) {
+            console.error(`User error: ${error.message}`);
+        } else {
+            console.error(`Unexpected error: ${error.message}`);
+        }
+
+        return {success: false, error: error.message};
+    }
+}
+
 module.exports = {
     getUser,
     createUser,
@@ -184,5 +225,6 @@ module.exports = {
     getNumberOfFreeTrialsLeft,
     checkUserSubscription,
     getUserSubscriptionDetails,
-    UserDoesNotExist
+    UserDoesNotExist,
+    createWork,
 };
