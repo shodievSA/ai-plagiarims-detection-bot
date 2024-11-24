@@ -32,14 +32,13 @@ app.post('/webhook/completed/:workId', async (req, res) => {
         message: `Webhook received for slug: ${workId}`,
         receivedData: requestData,
     });
-    const currentDateTime = new Date();
-    const formattedDateTime = `${currentDateTime.getFullYear()}_${currentDateTime.getMonth() + 1}_${currentDateTime.getDate()}_${currentDateTime.getHours()}_${currentDateTime.getMinutes()}_${currentDateTime.getSeconds()}`;
-    await axios.post(`https://api.copyleaks.com/v3/downloads/${workId}/export/${workId}_export_${formattedDateTime}`, {
+    const exportId = Date.now() + 1;
+    await axios.post(`https://api.copyleaks.com/v3/downloads/${workId}/export/${exportId}`, {
         "pdfReport": {
             "verb": "POST",
-            "endpoint": `https://apdb.jprq.site/export/${workId}_export_${formattedDateTime}/pdf-report`
+            "endpoint": `https://apdb.jprq.site/export/${exportId}/pdf-report`
         },
-        "completionWebhook": `https://apdb.jprq.site/export/${workId}_export_${formattedDateTime}/completed`,
+        "completionWebhook": `https://apdb.jprq.site/export/${exportId}/completed`,
         "maxRetries": 3
     }, {
         headers: {

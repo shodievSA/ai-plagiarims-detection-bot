@@ -34,11 +34,12 @@ async function sendFile(base64, work) {
         "properties": {
             "webhooks": {
                 "status": `https://apdb.jprq.site/webhook/{STATUS}/work_id_${workId}`
+            },
+            "pdf": {
+                "create": true,
             }
         },
-        "pdf": {
-            "create": true,
-        }
+
     }, {
         headers: {
             'Content-Type': 'application/json',
