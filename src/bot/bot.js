@@ -1,4 +1,4 @@
-require("dotenv").config({ path: require("path").resolve(__dirname, "../../.env") });
+require("dotenv").config({path: require("path").resolve(__dirname, "../../.env")});
 const path = require('path');
 const fs = require('fs');
 const {Telegraf} = require("telegraf");
@@ -12,11 +12,12 @@ const displayUserFreeTrialInfo = require("./commands/displayUserFreeTrialInfo.js
 const buySubscription = require("./commands/buySubscription.js");
 const handleFileUpload = require("./commands/handleFileUpload.js");
 const confirmUserPayment = require("./commands/confirmUserPayment.js");
-const { decreaseFreeTrialCounterForSingleUser } = require("../services/dbServices.js");
+const {decreaseFreeTrialCounterForSingleUser} = require("../services/dbServices.js");
 const subscriptionMiddleware = require("./middlewares/subscriptionMiddleware");
 const copyleaks = require("../services/copyleaks.js");
-const { CopyleaksExportModel } = require("plagiarism-checker");
-
+const {CopyleaksExportModel} = require("plagiarism-checker");
+const usersCommandHandler = require("./commands/usersCommandHandler");
+const {getUsers, getUser, getUserById, activateSubscriptionForSingleUser} = require("../services/dbServices");
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(loggerMiddleware);
 bot.use(authMiddleware);
@@ -24,10 +25,12 @@ bot.use(subscriptionMiddleware)
 
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.raw({ type: 'application/pdf', limit: "10mb" }));
+app.use(express.urlencoded({extended: true}));
+app.use(express.raw({type: 'application/pdf', limit: "10mb"}));
 
 bot.start(startBot);
+
+bot.hears("/users", usersCommandHandler);
 
 bot.hears("📃 Check my work", checkUserFile);
 bot.hears("🗓 My subscription", displayUserSubscriptionInfo);
@@ -36,6 +39,16 @@ bot.hears("💳 Buy subscription", buySubscription);
 
 bot.on("document", handleFileUpload);
 bot.on("successful_payment", confirmUserPayment);
+bot.on("callback_query", async (ctx) => {
+    const callbackData = ctx.callbackQuery.data
+    const userId = callbackData.split("_")[1]
+    const user = await getUserById(userId);
+    await activateSubscriptionForSingleUser(user.telegramId);
+    console.log(ctx.callbackQuery.data)
+    ctx.reply(`Subscription is activated for user with id ${userId}`)
+
+});
+
 
 app.post('/webhook/copyleaks/status', (req, res) => {
 
@@ -46,8 +59,8 @@ app.post('/webhook/copyleaks/status', (req, res) => {
 
 app.post('/webhook/copyleaks/completed', async (req, res) => {
 
-    const { scannedDocument, developerPayload } = req.body;
-    const { chat_id, telegram_id, token } = JSON.parse(developerPayload);
+    const {scannedDocument, developerPayload} = req.body;
+    const {chat_id, telegram_id, token} = JSON.parse(developerPayload);
 
     const scanID = scannedDocument["scanId"];
 
@@ -69,18 +82,18 @@ app.post('/webhook/copyleaks/completed', async (req, res) => {
     copyleaks.exportAsync(
         token, scanID, scanID, exportModel
     )
-    .then((res) => {
+        .then((res) => {
 
-        console.log(res);
+            console.log(res);
 
-    })
-    .catch((err) => {
+        })
+        .catch((err) => {
 
-        console.log(
-            "The following error occured while sending export model: " + err
-        );
+            console.log(
+                "The following error occured while sending export model: " + err
+            );
 
-    });
+        });
 
     res.sendStatus(200);
 
@@ -98,15 +111,15 @@ app.post('/webhook/export/scanId/:scanID/completion', async (req, res) => {
 });
 
 app.post(
-    '/webhook/export/:scanID/pdf-version/:chat_id/:telegram_id', 
+    '/webhook/export/:scanID/pdf-version/:chat_id/:telegram_id',
     async (req, res) => {
 
         const chatID = Number(req.params['chat_id']);
         const telegramID = Number(req.params['telegram_id']);
 
         const filePath = path.join(
-            __dirname, 
-            'reports', 
+            __dirname,
+            'reports',
             `${chatID}-report.pdf`
         );
 
@@ -122,7 +135,7 @@ app.post(
         res.sendStatus(200); // not sure if it is put correctly
 
         await bot.telegram.sendDocument(
-            chatID, { source: filePath }
+            chatID, {source: filePath}
         );
 
         await decreaseFreeTrialCounterForSingleUser(telegramID);
