@@ -1,4 +1,6 @@
 require("dotenv").config({ path: require("path").resolve(__dirname, "../../.env") });
+const path = require('path');
+const fs = require('fs');
 const {Telegraf} = require("telegraf");
 const express = require("express")
 const authMiddleware = require("./middlewares/authMiddleware");
@@ -14,9 +16,6 @@ const { decreaseFreeTrialCounterForSingleUser } = require("../services/dbService
 const subscriptionMiddleware = require("./middlewares/subscriptionMiddleware");
 const copyleaks = require("../services/copyleaks.js");
 const { CopyleaksExportModel } = require("plagiarism-checker");
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(loggerMiddleware);
@@ -26,6 +25,7 @@ bot.use(subscriptionMiddleware)
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.raw({ type: 'application/pdf', limit: "10mb" }));
 
 bot.start(startBot);
 
@@ -36,17 +36,6 @@ bot.hears("💳 Buy subscription", buySubscription);
 
 bot.on("document", handleFileUpload);
 bot.on("successful_payment", confirmUserPayment);
-
-const storage  = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "./reports");
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-    }
-});
-
-const upload = multer({ storage });
 
 app.post('/webhook/copyleaks/status', (req, res) => {
 
@@ -61,28 +50,18 @@ app.post('/webhook/copyleaks/completed', async (req, res) => {
     const { chat_id, telegram_id, token } = JSON.parse(developerPayload);
 
     const scanID = scannedDocument["scanId"];
-    const resultID = results["internet"][0]["id"]; // not there
 
     const exportModel = new CopyleaksExportModel(
         `${process.env.WEBHOOK_URL}/export/scanId/${scanID}/completion`,
-        [
-            {
-                id: resultID,
-                endpoint: `${process.env.WEBHOOK_URL}/export/${scanID}/result/${resultID}`,
-                verb: "POST",
-            },
-        ],
-        {
-            endpoint: `${process.env.WEBHOOK_URL}/export/${scanID}/crawled-version`,
-            verb: "POST",
-        },
+        [],
+        undefined,
         undefined,
         JSON.stringify({
             chat_id,
-            telegram_id
+            telegram_id,
         }),
         {
-            endpoint: `${process.env.WEBHOOK_URL}/export/pdf-report`,
+            endpoint: `${process.env.WEBHOOK_URL}/export/${scanID}/pdf-version/${chat_id}/${telegram_id}`,
             verb: "POST"
         }
     );
@@ -107,23 +86,51 @@ app.post('/webhook/copyleaks/completed', async (req, res) => {
 
 });
 
-app.post('/webhook/export/pdf-report', async (req, res) => {
+app.post('/webhook/export/scanId/:scanID/completion', async (req, res) => {
 
     console.log(
-        "Pdf report endpoint:",
-        req.file
-    )
+        "Completion webhook has been triggered!",
+        req.body
+    );
 
     res.sendStatus(200);
 
 });
 
-app.post('/webhook/copyleaks/export-completed', async (req, res) => {
+app.post(
+    '/webhook/export/:scanID/pdf-version/:chat_id/:telegram_id', 
+    async (req, res) => {
 
-    console.log("Export has completed");
-    console.log(req.body);
+        const chatID = Number(req.params['chat_id']);
+        const telegramID = Number(req.params['telegram_id']);
 
-});
+        const filePath = path.join(
+            __dirname, 
+            'reports', 
+            `${chatID}-report.pdf`
+        );
+
+        fs.writeFileSync(filePath, req.body, (err) => {
+
+            if (err) {
+                console.error('Error saving file:', err);
+                return res.status(500).send('Failed to save file.');
+            }
+
+        });
+
+        res.sendStatus(200); // not sure if it is put correctly
+
+        await bot.telegram.sendDocument(
+            chatID, { source: filePath }
+        );
+
+        await decreaseFreeTrialCounterForSingleUser(telegramID);
+
+        fs.unlinkSync(filePath);
+
+    }
+);
 
 app.post('/webhook/copyleaks/error', (req, res) => {
 

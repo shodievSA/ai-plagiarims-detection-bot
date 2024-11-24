@@ -1,6 +1,10 @@
 const copyleaks = require("../../services/copyleaks.js");
-const { checkUserFreeTrial, checkUserSubscription } = require("../../services/dbServices.js");
+const { 
+    checkUserFreeTrial, 
+    checkUserSubscription 
+} = require("../../services/dbServices.js");
 const { CopyleaksURLSubmissionModel } = require('plagiarism-checker');
+
 
 async function handleFileUpload(ctx) {
 
@@ -25,7 +29,7 @@ async function handleFileUpload(ctx) {
         ) {
 
             ctx.reply(
-                "Your work is being checked. Please wait.",
+                "Your work is being checked. This might take a minute.",
                 { reply_to_message_id: ctx.message.message_id }
             );
 
@@ -60,6 +64,7 @@ async function handleFileUpload(ctx) {
                                 sensitivityLevel: 5,
                                 pdf: {
                                     create: true,
+                                    version: 2
                                 }
                             }
                         );
@@ -70,11 +75,6 @@ async function handleFileUpload(ctx) {
                         .then((res) => {
 
                             console.log(res);
-
-                            ctx.reply(
-                                "Almost there. You should get the feedback of your work in a few seconds.",
-                                { reply_to_message_id: ctx.message.message_id }
-                            );
 
                         })
                         .catch((err) => {
