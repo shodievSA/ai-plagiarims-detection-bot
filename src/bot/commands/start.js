@@ -23,7 +23,7 @@ async function startBot(ctx) {
             Markup.keyboard([
                 ["📃 Check my work"],
                 ["🗓 My subscription", "🆓 My free trials"],
-                ["💳 Buy subscription"]
+                ["💳 Buy subscription", "👤 My profile"]
             ])
             .resize()
         );
