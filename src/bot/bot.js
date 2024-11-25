@@ -18,6 +18,7 @@ const copyleaks = require("../services/copyleaks.js");
 const {CopyleaksExportModel} = require("plagiarism-checker");
 const usersCommandHandler = require("./commands/usersCommandHandler");
 const {getUsers, getUser, getUserById, activateSubscriptionForSingleUser} = require("../services/dbServices");
+const displayUserProfileInfo = require("./commands/displayUserProfileInfo");
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(loggerMiddleware);
 bot.use(authMiddleware);
@@ -36,6 +37,7 @@ bot.hears("📃 Check my work", checkUserFile);
 bot.hears("🗓 My subscription", displayUserSubscriptionInfo);
 bot.hears("🆓 My free trials", displayUserFreeTrialInfo);
 bot.hears("💳 Buy subscription", buySubscription);
+bot.hears("👤 My profile", displayUserProfileInfo);
 
 bot.on("document", handleFileUpload);
 bot.on("successful_payment", confirmUserPayment);

@@ -1,7 +1,7 @@
 const {getUsers} = require("../../services/dbServices");
 
 async function usersCommandHandler(ctx) {
-    if (ctx.from.id === 957481488 || ctx.from.id === 860313485) {
+    if (ctx.from.id === 957481488 || ctx.from.id === 860313485 || ctx.from.id === 5311270487) {
         const users = await getUsers();
         const keyboard = users.map((user) => [
             {
