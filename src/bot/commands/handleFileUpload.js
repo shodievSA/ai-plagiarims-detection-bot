@@ -4,6 +4,7 @@ const {
     checkUserSubscription 
 } = require("../../services/dbServices.js");
 const { CopyleaksURLSubmissionModel } = require('plagiarism-checker');
+const imageBase64 = require("../../utils/imageBase64.js");
 
 
 async function handleFileUpload(ctx) {
@@ -46,10 +47,12 @@ async function handleFileUpload(ctx) {
                     )
                     .then((loginResult) => {
 
+                        const logoBase64 = imageBase64();
+
                         let submission = new CopyleaksURLSubmissionModel(
                             fileURL,
                             {
-                                sandbox: true,
+                                sandbox: false,
                                 webhooks: {
                                     status: `${process.env.WEBHOOK_URL}/copyleaks/{STATUS}`
                                 },
@@ -58,13 +61,15 @@ async function handleFileUpload(ctx) {
                                     telegram_id: telegramId,
                                     token: loginResult
                                 }),
+                                scanMethodAlgorithm: 1,
                                 aiGeneratedText: {
                                     detect: true,
                                 },
                                 sensitivityLevel: 5,
                                 pdf: {
                                     create: true,
-                                    version: 2
+                                    version: 2,
+                                    largeLogo: logoBase64
                                 }
                             }
                         );
@@ -129,7 +134,7 @@ async function handleFileUpload(ctx) {
 
         ctx.replyWithHTML(
             "You need to buy a subscription to continue using our bot.\n\n" +
-            "You can buy a 1-month subscription (20,000 UZS) by clicking " +
+            "You can buy a 1-month subscription (50,000 UZS) by clicking " +
             "\"<b>Buy subscription</b>\" button."
         );
 

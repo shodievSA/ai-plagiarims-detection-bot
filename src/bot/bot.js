@@ -59,14 +59,29 @@ app.post('/webhook/copyleaks/status', (req, res) => {
 
 app.post('/webhook/copyleaks/completed', async (req, res) => {
 
-    const {scannedDocument, developerPayload} = req.body;
+    const {scannedDocument, developerPayload, results} = req.body;
     const {chat_id, telegram_id, token} = JSON.parse(developerPayload);
 
     const scanID = scannedDocument["scanId"];
+    let references = [];
+
+    if (results.internet.length > 0) {
+
+        for (let i = 0; i < results.internet.length; i++) {
+
+            references.push({
+                id: results.internet[i].id,
+                endpoint: `${process.env.WEBHOOK_URL}/export/${scanID}/result/${results.internet[i].id}`,
+                verb: "POST"
+            });
+
+        }
+
+    }
 
     const exportModel = new CopyleaksExportModel(
         `${process.env.WEBHOOK_URL}/export/scanId/${scanID}/completion`,
-        [],
+        references,
         undefined,
         undefined,
         JSON.stringify({
@@ -98,6 +113,14 @@ app.post('/webhook/copyleaks/completed', async (req, res) => {
     res.sendStatus(200);
 
 });
+
+app.post('/webhook/export/:scanID/result/:resultID', async (req, res) => {
+
+    console.log("Result webhook triggered!");
+
+    res.sendStatus(200);
+
+})
 
 app.post('/webhook/export/scanId/:scanID/completion', async (req, res) => {
 
@@ -140,7 +163,7 @@ app.post(
 
         await decreaseFreeTrialCounterForSingleUser(telegramID);
 
-        fs.unlinkSync(filePath);
+        // fs.unlinkSync(filePath);
 
     }
 );

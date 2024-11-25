@@ -5,11 +5,12 @@ async function buySubscription(ctx) {
     ctx.replyWithHTML(
         "<b>AI & Plagiarism detection:</b>\n\n" +
         "- 1-month subscription\n\n" +
+        "- instant reports\n\n" +
         "- 99% accuracy\n\n" +
         "- detection of plagiarism\n\n" + 
         "- detection of AI models such as ChatGPT, Gemini, Claude\n\n" +
         "- supported files: .pdf, .docx, .doc and .txt.\n\n" +
-        "Price: <b>20,000 UZS</b>",
+        "Price: <b>50,000 UZS</b>",
         Markup.inlineKeyboard(
             [
                 Markup.button.url(

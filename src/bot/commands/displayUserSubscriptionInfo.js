@@ -28,8 +28,8 @@ async function displayUserSubscriptionInfo(ctx) {
 
         ctx.replyWithHTML(
             "Your subscription details:\n\n" +
-            "<b>Purchased on: </b>" + purchaseDate + "\n\n" +
-            "<b>Expires on: </b>" + expirationDate
+            "<b>Purchase date: </b>" + purchaseDate + "\n\n" +
+            "<b>Expiration date: </b>" + expirationDate
         );
 
     } else {
