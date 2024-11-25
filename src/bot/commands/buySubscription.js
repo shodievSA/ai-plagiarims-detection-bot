@@ -15,7 +15,7 @@ async function buySubscription(ctx) {
             [
                 Markup.button.url(
                 "Contact Admin", 
-                "https://t.me/one_problem_solution_2"
+                "https://t.me/turniCheck_admin"
                 )
             ]
         )

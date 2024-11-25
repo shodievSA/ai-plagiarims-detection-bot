@@ -7,8 +7,6 @@ const authMiddleware = require("./middlewares/authMiddleware");
 const loggerMiddleware = require("./middlewares/loggerMiddleware");
 const startBot = require("./commands/start.js");
 const checkUserFile = require("./commands/checkUserFile.js");
-const displayUserSubscriptionInfo = require("./commands/displayUserSubscriptionInfo.js");
-const displayUserFreeTrialInfo = require("./commands/displayUserFreeTrialInfo.js");
 const buySubscription = require("./commands/buySubscription.js");
 const handleFileUpload = require("./commands/handleFileUpload.js");
 const confirmUserPayment = require("./commands/confirmUserPayment.js");
@@ -17,8 +15,9 @@ const subscriptionMiddleware = require("./middlewares/subscriptionMiddleware");
 const copyleaks = require("../services/copyleaks.js");
 const {CopyleaksExportModel} = require("plagiarism-checker");
 const usersCommandHandler = require("./commands/usersCommandHandler");
-const {getUsers, getUser, getUserById, activateSubscriptionForSingleUser} = require("../services/dbServices");
+const {getUserById, activateSubscriptionForSingleUser} = require("../services/dbServices");
 const displayUserProfileInfo = require("./commands/displayUserProfileInfo");
+
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(loggerMiddleware);
 bot.use(authMiddleware);
@@ -33,11 +32,9 @@ bot.start(startBot);
 
 bot.hears("/users", usersCommandHandler);
 
-bot.hears("📃 Check my work", checkUserFile);
-bot.hears("🗓 My subscription", displayUserSubscriptionInfo);
-bot.hears("🆓 My free trials", displayUserFreeTrialInfo);
+bot.hears("📄 Check my work", checkUserFile);
 bot.hears("💳 Buy subscription", buySubscription);
-bot.hears("👤 My profile", displayUserProfileInfo);
+bot.hears("🧑‍💻 My profile", displayUserProfileInfo);
 
 bot.on("document", handleFileUpload);
 bot.on("successful_payment", confirmUserPayment);
@@ -157,7 +154,7 @@ app.post(
 
         });
 
-        res.sendStatus(200); // not sure if it is put correctly
+        res.sendStatus(200);
 
         await bot.telegram.sendDocument(
             chatID, {source: filePath}
@@ -165,7 +162,7 @@ app.post(
 
         await decreaseFreeTrialCounterForSingleUser(telegramID);
 
-        // fs.unlinkSync(filePath);
+        fs.unlinkSync(filePath);
 
     }
 );

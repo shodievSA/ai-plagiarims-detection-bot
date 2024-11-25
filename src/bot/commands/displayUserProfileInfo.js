@@ -1,5 +1,5 @@
 const {getUser} = require("../../services/dbServices");
-const {formatDateTime} = require("../../utils/formatDate");
+const formatDate = require("../../utils/formatDate.js");
 
 
 async function displayUserProfileInfo(ctx) {
@@ -8,10 +8,23 @@ async function displayUserProfileInfo(ctx) {
     const dbUser = await getUser(user.id);
     const subscriptionStartedAt = new Date(dbUser.subscriptionStartedAt);
     const subscriptionFinishedAt = new Date(dbUser.subscriptionFinishedAt);
-    const formattedSubscriptionStartedAt = await formatDateTime(subscriptionStartedAt);
-    const formattedSubscriptionFinishedAt = await formatDateTime(subscriptionFinishedAt);
+    const formattedSubscriptionStartedAt = formatDate(
+        subscriptionStartedAt, "EEEE MMMM do yyyy"
+    );
+    const formattedSubscriptionFinishedAt = formatDate(
+        subscriptionFinishedAt, "EEEE MMMM do yyyy"
+    );
 
-    const text = !dbUser.isSubscriptionActive ? `Profile info:\n\n<pre>ID: ${dbUser.id}</pre>\nFree trials left: <strong>${dbUser.freeTrialCounter}</strong>\n\nIf you have any questions you can contact admin: <strong>@one_problem_solution_2</strong>.` : `Profile info:\n\n<pre>ID: ${dbUser.id}</pre>\nFree trials left: <strong>${dbUser.freeTrialCounter}</strong>\nSubscription activated at: <strong>${formattedSubscriptionStartedAt}</strong>\nSubscription finishes at: <strong>${formattedSubscriptionFinishedAt}</strong>\n\nIf you have any questions you can contact admin: <strong>@one_problem_solution_2</strong>.`
+    const text = !dbUser.isSubscriptionActive ? (
+        `Profile info:\n\n<b>User ID</b>: ${dbUser.id}\n\n` +
+        `<b>Free trials left</b>: ${dbUser.freeTrialCounter}` 
+    ) : (
+        `Profile info:\n\n<b>User ID</b>: ${dbUser.id}\n\n` +
+        `<b>Free trials left</b>: ${dbUser.freeTrialCounter}\n\n` +
+        `<b>Subscription purchase date</b>: ${formattedSubscriptionStartedAt}\n\n` +
+        `<b>Subscription expiration date</b>: ${formattedSubscriptionFinishedAt}`
+    )
+    
     ctx.reply(text, {parse_mode: "HTML"});
 
 }

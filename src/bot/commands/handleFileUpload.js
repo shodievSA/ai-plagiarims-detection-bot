@@ -30,7 +30,7 @@ async function handleFileUpload(ctx) {
         ) {
 
             ctx.reply(
-                "Your work is being checked. This might take a minute.",
+                "Your work is being checked. This might take a minute. 🙂‍↔️",
                 { reply_to_message_id: ctx.message.message_id }
             );
 

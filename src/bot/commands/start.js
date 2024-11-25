@@ -21,9 +21,8 @@ async function startBot(ctx) {
             "click \"<b>Check my work</b>\" button and then send your file. At the moment, the following files are supported: " +
             "<b>.pdf</b>, <b>.txt</b>, <b>.docx</b> and <b>.doc</b>.",
             Markup.keyboard([
-                ["📃 Check my work"],
-                ["🗓 My subscription", "🆓 My free trials"],
-                ["💳 Buy subscription", "👤 My profile"]
+                ["📄 Check my work",],
+                ["🧑‍💻 My profile", "💳 Buy subscription"]
             ])
             .resize()
         );

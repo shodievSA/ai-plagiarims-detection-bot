@@ -9,16 +9,4 @@ function formatDate(unformmatedDate, structure) {
 
 }
 
-async function formatDateTime(dateTime) {
-    const formattedDateTime = new Intl.DateTimeFormat('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-    }).format(dateTime);
-    return formattedDateTime;
-}
-module.exports = {formatDate, formatDateTime};
+module.exports = formatDate;

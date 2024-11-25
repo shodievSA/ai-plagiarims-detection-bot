@@ -1,6 +1,5 @@
 # Node.js dependencies
 node_modules/
-media/
 .idea/
 
 # Log files
