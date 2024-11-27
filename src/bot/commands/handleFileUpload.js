@@ -61,6 +61,9 @@ async function handleFileUpload(ctx) {
                                     telegram_id: telegramId,
                                     token: loginResult
                                 }),
+                                exclude: {
+                                    quotes: true,
+                                },
                                 scanMethodAlgorithm: 1,
                                 aiGeneratedText: {
                                     detect: true,
