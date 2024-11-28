@@ -5,7 +5,7 @@ const {
 } = require("../../services/dbServices.js");
 const { CopyleaksURLSubmissionModel } = require('plagiarism-checker');
 const imageBase64 = require("../../utils/imageBase64.js");
-
+const reportError = require("../errorsBot.js");
 
 async function handleFileUpload(ctx) {
 
@@ -29,87 +29,99 @@ async function handleFileUpload(ctx) {
             fileType == "application/msword"
         ) {
 
-            ctx.reply(
+            const replyMessage = await ctx.reply(
                 "Your work is being checked. This might take a minute. 🙂‍↔️",
                 { reply_to_message_id: ctx.message.message_id }
             );
 
             try {
 
-                async function processFile() {
+                const fileID = file.file_id;
+                const fileURL = await ctx.telegram.getFileLink(fileID);
 
-                    const fileID = file.file_id;
-                    const fileURL = await ctx.telegram.getFileLink(fileID);
+                copyleaks.loginAsync(
+                    process.env.COPYLEAKS_EMAIL,
+                    process.env.COPYLEAKS_API_KEY
+                )
+                .then((loginResult) => {
 
-                    copyleaks.loginAsync(
-                        process.env.COPYLEAKS_EMAIL,
-                        process.env.COPYLEAKS_API_KEY
-                    )
-                    .then((loginResult) => {
+                    const logoBase64 = imageBase64();
 
-                        const logoBase64 = imageBase64();
-
-                        let submission = new CopyleaksURLSubmissionModel(
-                            fileURL,
-                            {
-                                sandbox: false,
-                                webhooks: {
-                                    status: `${process.env.WEBHOOK_URL}/copyleaks/{STATUS}`
-                                },
-                                developerPayload: JSON.stringify({
-                                    chat_id: ctx.chat.id,
-                                    telegram_id: telegramId,
-                                    token: loginResult
-                                }),
-                                exclude: {
-                                    quotes: true,
-                                },
-                                scanMethodAlgorithm: 1,
-                                aiGeneratedText: {
-                                    detect: true,
-                                },
-                                sensitivityLevel: 5,
-                                pdf: {
-                                    create: true,
-                                    version: 2,
-                                    largeLogo: logoBase64
-                                }
+                    let submission = new CopyleaksURLSubmissionModel(
+                        fileURL,
+                        {
+                            sandbox: false,
+                            webhooks: {
+                                status: `${process.env.WEBHOOK_URL}/copyleaks/{STATUS}`
+                            },
+                            developerPayload: JSON.stringify({
+                                chat_id: ctx.chat.id,
+                                telegram_id: telegramId,
+                                token: loginResult,
+                                messageID: replyMessage['message_id']
+                            }),
+                            exclude: {
+                                quotes: true,
+                            },
+                            scanMethodAlgorithm: 1,
+                            aiGeneratedText: {
+                                detect: true,
+                            },
+                            sensitivityLevel: 5,
+                            pdf: {
+                                create: true,
+                                version: 2,
+                                largeLogo: logoBase64
                             }
-                        );
-                    
-                        copyleaks.submitUrlAsync(
-                            loginResult, Date.now() + 1, submission
-                        )
-                        .then((res) => {
+                        }
+                    );
+                
+                    copyleaks.submitUrlAsync(
+                        loginResult, Date.now() + 1, submission
+                    )
+                    .then((res) => {
 
-                            console.log(res);
+                        console.log(res);
 
-                        })
-                        .catch((err) => {
-
-                            console.log(
-                                "Error occured while submitting file url: " + err
-                            );
-
-                            ctx.reply(
-                                "An unexpected error occured! Please try again later."
-                            );
-
-                        })
-                    
                     })
-                    .catch((err) => {
+                    .catch(async (err) => {
 
-                        console.log("Couldn't login: " + err);
+                        console.log(
+                            "Error occured while submitting file url: " + err
+                        );
 
-                        ctx.reply(
-                            "An unexpected error occured! Please try again later."
+                        await reportError(
+                            ctx.chat.id,
+                            `Error:\n\n"Couldn't submit user work to the copyleaks API."`
+                        );
+
+                        await ctx.reply(
+                            "Sorry, we couldn't scan your file. 😓\n\n" +
+                            "We've been already informed about your issue and we'll try to fix it as soon as possible. " +
+                            "We advise you to resend your file in 2 hours.\n\n" +
+                            "We are sorry for the inconvenience our service might have caused."
                         );
 
                     })
+                
+                })
+                .catch(async (err) => {
 
-                };
-                processFile();
+                    console.log("Couldn't login: " + err);
+
+                    await reportError(
+                        ctx.chat.id,
+                        `Error:\n\n"Couldn't log in."`
+                    );
+
+                    await ctx.reply(
+                        "Sorry, we couldn't scan your file. 😓\n\n" +
+                        "We've been already informed about your issue and we'll try to fix it as soon as possible. " +
+                        "We advise you to resend your file in 2 hours.\n\n" +
+                        "We are sorry for the inconvenience our service might have caused."
+                    );
+
+                })
 
             } catch (error) {
 
@@ -118,9 +130,17 @@ async function handleFileUpload(ctx) {
                     error
                 );
 
-                ctx.reply(
-                    "An unexpected error occured! Please try again later."
-                )
+                await reportError(
+                    ctx.chat.id,
+                    `Error:\n\n"Error occured in the try and catch block in the handleFileUpload file."`
+                );
+
+                await ctx.reply(
+                    "Sorry, we couldn't scan your file. 😓\n\n" +
+                    "We've been already informed about your issue and we'll try to fix it as soon as possible. " +
+                    "We advise you to resend your file in 2 hours.\n\n" +
+                    "We are sorry for the inconvenience our service might have caused."
+                );
 
             }
 

@@ -17,6 +17,7 @@ const {CopyleaksExportModel} = require("plagiarism-checker");
 const usersCommandHandler = require("./commands/usersCommandHandler");
 const {getUserById, activateSubscriptionForSingleUser} = require("../services/dbServices");
 const displayUserProfileInfo = require("./commands/displayUserProfileInfo");
+const reportError = require("./errorsBot.js");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(loggerMiddleware);
@@ -90,24 +91,37 @@ app.post('/webhook/copyleaks/completed', async (req, res) => {
         {
             endpoint: `${process.env.WEBHOOK_URL}/export/${scanID}/pdf-version/${chat_id}/${telegram_id}`,
             verb: "POST"
-        }
+        },
     );
 
     copyleaks.exportAsync(
         token, scanID, scanID, exportModel
     )
-        .then((res) => {
+    .then((res) => {
 
-            console.log(res);
+        console.log(res);
 
-        })
-        .catch((err) => {
+    })
+    .catch(async (err) => {
 
-            console.log(
-                "The following error occured while sending export model: " + err
-            );
+        console.log(
+            "The following error occured while sending export model: " + err
+        );
 
-        });
+        await reportError(
+            chat_id,
+            `Error:\n\n"Couldn't export PDF report of a user."`
+        );
+
+        await bot.telegram.sendMessage(
+            chat_id,
+            "Sorry, we couldn't scan your file. 😓\n\n" +
+            "We've been already informed about your issue and we'll try to fix it as soon as possible. " +
+            "We advise you to resend your file in 2 hours.\n\n" +
+            "We are sorry for the inconvenience our service might have caused."
+        );
+
+    });
 
     res.sendStatus(200);
 
@@ -145,14 +159,47 @@ app.post(
             `${chatID}-report.pdf`
         );
 
-        fs.writeFileSync(filePath, req.body, (err) => {
+        try {
 
-            if (err) {
-                console.error('Error saving file:', err);
-                return res.status(500).send('Failed to save file.');
-            }
+            fs.writeFileSync(filePath, req.body, async (error) => {
 
-        });
+                if (err) {
+                    console.error('Error saving file:', error);
+                    
+                    await reportError(
+                        chatID,
+                        `Error:\n\n"The user's PDF report couldn't be saved in the file system."`
+                    );
+    
+                    await bot.telegram.sendMessage(
+                        chatID,
+                        "Sorry, we couldn't scan your file. 😓\n\n" +
+                        "We've been already informed about your issue and we'll try to fix it as soon as possible. " +
+                        "We advise you to resend your file in 2 hours.\n\n" +
+                        "We are sorry for the inconvenience our service might have caused."
+                    );
+                }
+    
+            });
+
+        } catch (error) {
+
+            console.error('Error saving file:', error);
+                    
+            await reportError(
+                chatID,
+                `Error:\n\n"Couldn't parse the request body of PDF report API endpoint."`
+            );
+
+            await bot.telegram.sendMessage(
+                chatID,
+                "Sorry, we couldn't scan your file. 😓\n\n" +
+                "We've been already informed about your issue and we'll try to fix it as soon as possible. " +
+                "We advise you to resend your file in 2 hours.\n\n" +
+                "We are sorry for the inconvenience our service might have caused."
+            );
+
+        }
 
         res.sendStatus(200);
 
@@ -167,9 +214,30 @@ app.post(
     }
 );
 
-app.post('/webhook/copyleaks/error', (req, res) => {
+app.post('/webhook/copyleaks/error', async (req, res) => {
 
-    console.log('Copyleaks status update:', req.body);
+    let { developerPayload, error } = req.body;
+    developerPayload = JSON.parse(developerPayload);
+
+    await reportError(
+        developerPayload['chat_id'],
+        `Code: ${error.code}\n\n` +
+        `Error:\n\n"${error.message}"`
+    );
+
+    await bot.telegram.deleteMessage(
+        developerPayload['chat_id'],
+        developerPayload['messageID']
+    );
+
+    await bot.telegram.sendMessage(
+        developerPayload['chat_id'],
+        "Sorry, we couldn't scan your file. 😓\n\n" +
+        "We've been already informed about your issue and we'll try to fix it as soon as possible. " +
+        "We advise you to resend your file in 2 hours.\n\n" +
+        "We are sorry for the inconvenience our service might have caused."
+    );
+
     res.sendStatus(200);
 
 });
