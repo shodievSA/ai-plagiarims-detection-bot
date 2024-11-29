@@ -18,6 +18,7 @@ const usersCommandHandler = require("./commands/usersCommandHandler");
 const {getUserById, activateSubscriptionForSingleUser} = require("../services/dbServices");
 const displayUserProfileInfo = require("./commands/displayUserProfileInfo");
 const reportError = require("./errorsBot.js");
+const getAvailableCredits = require("./commands/getAvailableCredits.js");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(loggerMiddleware);
@@ -27,11 +28,12 @@ bot.use(subscriptionMiddleware)
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-app.use(express.raw({type: 'application/pdf', limit: "10mb"}));
+app.use(express.raw({type: 'application/pdf', limit: "30mb"}));
 
 bot.start(startBot);
 
 bot.hears("/users", usersCommandHandler);
+bot.hears("/credits", getAvailableCredits);
 
 bot.hears("📄 Check my work", checkUserFile);
 bot.hears("💳 Buy subscription", buySubscription);
