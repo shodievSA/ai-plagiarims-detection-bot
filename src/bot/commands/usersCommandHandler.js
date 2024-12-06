@@ -12,7 +12,7 @@ async function usersCommandHandler(ctx) {
 
         let text = "";
         users.forEach((user) => {
-            text += `${user.id} - \`${user.telegramId}\` ${user.firstName} ${user.lastName} ${user.isSubscriptionActive} ${user.freeTrialCounter}\n\n`;
+            text += `${user.id} - \`${user.telegramId}\` ${"@"+user.username || "None"} ${user.firstName} ${user.isSubscriptionActive} ${user.freeTrialCounter}\n\n`;
             console.log(user);
         });
 
