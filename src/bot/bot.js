@@ -19,6 +19,10 @@ const {getUserById, activateSubscriptionForSingleUser} = require("../services/db
 const displayUserProfileInfo = require("./commands/displayUserProfileInfo");
 const reportError = require("./errorsBot.js");
 const getAvailableCredits = require("./commands/getAvailableCredits.js");
+const makeAnnouncement = require("./commands/makeAnnouncement.js");
+const handleMessage = require("./commands/handleMessage.js");
+const sendAnnouncement = require("./commands/sendAnnouncement.js");
+const cancelAnnouncement = require("./commands/cancelAnnouncement.js");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(loggerMiddleware);
@@ -34,12 +38,17 @@ bot.start(startBot);
 
 bot.hears("/users", usersCommandHandler);
 bot.hears("/credits", getAvailableCredits);
+bot.hears("/announcement", makeAnnouncement);
 
 bot.hears("📄 Check my work", checkUserFile);
 bot.hears("💳 Buy subscription", buySubscription);
 bot.hears("🧑‍💻 My profile", displayUserProfileInfo);
 
+bot.action("send_announcement_true", sendAnnouncement);
+bot.action("send_announcement_false", cancelAnnouncement);
+
 bot.on("document", handleFileUpload);
+bot.on("message", handleMessage);
 bot.on("successful_payment", confirmUserPayment);
 bot.on("callback_query", async (ctx) => {
     const callbackData = ctx.callbackQuery.data
@@ -50,7 +59,6 @@ bot.on("callback_query", async (ctx) => {
     ctx.reply(`Subscription is activated for user with id ${userId}`)
 
 });
-
 
 app.post('/webhook/copyleaks/status', (req, res) => {
 
