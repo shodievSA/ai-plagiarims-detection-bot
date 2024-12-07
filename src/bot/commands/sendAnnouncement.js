@@ -1,3 +1,4 @@
+const { Markup } = require("telegraf");
 const { getUsers } = require("../../services/dbServices.js");
 
 async function sendAnnouncement(ctx) {
@@ -13,6 +14,15 @@ async function sendAnnouncement(ctx) {
     announcement = announcement.slice(0, -1);
 
     const users = await getUsers();
+
+    await ctx.reply(
+        "Announcement submitted",
+        Markup.keyboard([
+            ["📄 Check my work",],
+            ["🧑‍💻 My profile", "💳 Buy subscription"]
+        ])
+        .resize()
+    );
 
     for (const user of users) {
 
