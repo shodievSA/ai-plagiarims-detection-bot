@@ -3,7 +3,7 @@ const { getUsers } = require("../../services/dbServices.js");
 
 async function sendAnnouncement(ctx) {
 
-    ctx.answerCbQuery();
+    await ctx.answerCbQuery();
     
     const message = ctx.update.callback_query.message.text;
     
@@ -15,23 +15,35 @@ async function sendAnnouncement(ctx) {
 
     const users = await getUsers();
 
+    let counter = 0;
+
+    await Promise.all(users.map(async (user, index) => 
+
+        new Promise((resolve) => {
+
+            setTimeout(async () => {
+
+                await ctx.telegram.sendMessage(
+                    user.telegramId, announcement
+                ); 
+                counter++;
+
+                resolve();
+
+            }, index * 1000);
+
+        })
+
+    ));
+
     await ctx.reply(
-        "Announcement submitted",
+        `Announcement has been sent to ${counter} users.`,
         Markup.keyboard([
             ["📄 Check my work",],
             ["🧑‍💻 My profile", "💳 Buy subscription"]
         ])
         .resize()
     );
-
-    for (const user of users) {
-
-        await ctx.telegram.sendMessage(
-            user.telegramId,
-            announcement
-        );
-
-    }
 
     const chatID = ctx.update.callback_query.message.chat.id;
     const messageID = ctx.update.callback_query.message.message_id;

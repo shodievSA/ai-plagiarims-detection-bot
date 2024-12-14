@@ -30,7 +30,7 @@ async function getUserById(id) {
 }
 
 async function getUsers() {
-    const users = await User.findAll({});
+    const users = await User.findAll({ raw: true });
     return users;
 }
 
